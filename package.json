@@ -17,7 +17,8 @@
     "docker:logs": "docker-compose logs -f"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "@types/node": "^25.9.1",
+    "typescript": "^6.0.3"
   },
   "packageManager": "yarn@4.0.0"
 }

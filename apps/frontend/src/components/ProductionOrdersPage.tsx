@@ -9,7 +9,6 @@ import {
   Input,
   InputNumber,
   DatePicker,
-  Select,
   message,
   Space,
   Spin,
@@ -148,7 +147,7 @@ export const ProductionOrdersPage: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      render: (text: any, record: ProductionOrder) => (
+      render: (_: any, record: ProductionOrder) => (
         <Space size="small">
           <Button
             type="link"

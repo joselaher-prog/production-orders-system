@@ -3,14 +3,17 @@
     "module": "commonjs",
     "target": "ES2021",
     "lib": ["ES2021"],
+    "types": ["node"],
     "declaration": true,
     "outDir": "./dist",
+    "rootDir": "../..",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@po/*": ["../../libs/*/src"]
     },
