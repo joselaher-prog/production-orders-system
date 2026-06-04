@@ -17,7 +17,7 @@ export class ProductionOrdersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ProductionOrder> {
+  async findOne(@Param('id') id: string): Promise<ProductionOrder | null> {
     return this.service.findOne(id);
   }
 
@@ -32,7 +32,7 @@ export class ProductionOrdersController {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateProductionOrderDto,
-  ): Promise<ProductionOrder> {
+  ): Promise<ProductionOrder | null> {
     return this.service.update(id, updateDto);
   }
 

@@ -42,7 +42,7 @@ export class ProductionOrdersService {
     return [];
   }
 
-  async findOne(id: string): Promise<ProductionOrder> {
+  async findOne(id: string): Promise<ProductionOrder | null> {
     // Mock for now
     return null;
   }
@@ -61,7 +61,7 @@ export class ProductionOrdersService {
   async update(
     id: string,
     updateDto: UpdateProductionOrderDto,
-  ): Promise<ProductionOrder> {
+  ): Promise<ProductionOrder | null> {
     // In production, update in Directus
     return null;
   }
@@ -78,8 +78,8 @@ export class ProductionOrdersService {
       const allOrders = await this.findAll();
 
       // Filter if specific order IDs provided
-      const ordersToCheck = request.orderIds?.length
-        ? allOrders.filter((o) => request.orderIds.includes(o.id))
+      const ordersToCheck = request.orderIds && request.orderIds.length > 0
+        ? allOrders.filter((o) => request.orderIds!.includes(o.id))
         : allOrders;
 
       // Apply rescheduling algorithm
@@ -100,9 +100,10 @@ export class ProductionOrdersService {
         updatedOrders: rescheduled,
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: `Error rescheduling conflicts: ${error.message}`,
+        message: `Error rescheduling conflicts: ${errorMessage}`,
       };
     }
   }
