@@ -21,8 +21,8 @@ services:
 
   backend:
     build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -36,12 +36,12 @@ services:
       - ./apps/backend/node_modules:/app/node_modules
     networks:
       - production-orders
-    command: npm run start:dev
+    command: yarn workspace @po/backend start:dev
 
   frontend:
     build:
-      context: ./apps/frontend
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: apps/frontend/Dockerfile.dev
     ports:
       - "3001:3000"
     environment:

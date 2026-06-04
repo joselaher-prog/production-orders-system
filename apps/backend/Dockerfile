@@ -2,11 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-
-RUN yarn install
-
 COPY . .
+
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate && yarn install
 
 RUN yarn workspace @po/backend build
 
