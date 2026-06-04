@@ -1,0 +1,23 @@
+{
+  "name": "production-orders-system",
+  "version": "1.0.0",
+  "description": "Mini Production Orders mini-SaaS with Directus & NestJS backend and Next.js frontend",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "dev": "yarn workspace @po/backend dev & yarn workspace @po/frontend dev",
+    "build": "yarn workspace @po/backend build && yarn workspace @po/frontend build",
+    "test": "yarn workspace @po/backend test",
+    "test:watch": "yarn workspace @po/backend test:watch",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "yarn@4.0.0"
+}

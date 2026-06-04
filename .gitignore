@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+.env
+.env.local
+.DS_Store
+.vscode/
+.idea/
+.next/
+out/
+build/
+coverage/
+directus/database/*
+!directus/database/.gitkeep
+directus/uploads/*
+!directus/uploads/.gitkeep

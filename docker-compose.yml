@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  directus:
+    image: directus/directus:latest
+    ports:
+      - "8055:8055"
+    environment:
+      KEY: your-secret-key-change-me
+      SECRET: your-secret-change-me
+      DB_CLIENT: sqlite3
+      DB_FILENAME: /directus/database.sqlite
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
+      PUBLIC_URL: http://localhost:8055
+    volumes:
+      - ./directus/database:/directus
+      - ./directus/uploads:/directus/uploads
+    networks:
+      - production-orders
+
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: http://directus:8055
+      DATABASE_TOKEN: admin123
+    depends_on:
+      - directus
+    volumes:
+      - ./apps/backend/src:/app/src
+      - ./apps/backend/node_modules:/app/node_modules
+    networks:
+      - production-orders
+    command: npm run start:dev
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    depends_on:
+      - backend
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+    networks:
+      - production-orders
+    command: npm run dev
+
+networks:
+  production-orders:
+    driver: bridge
