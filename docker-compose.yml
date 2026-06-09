@@ -1,21 +1,38 @@
-version: '3.8'
-
 services:
   directus:
     image: directus/directus:latest
+    restart: always
+    user: "root"
     ports:
       - "8055:8055"
     environment:
       KEY: your-secret-key-change-me
       SECRET: your-secret-change-me
       DB_CLIENT: sqlite3
-      DB_FILENAME: /directus/database.sqlite
+      DB_FILENAME: /directus/database/database.sqlite
       ADMIN_EMAIL: admin@example.com
       ADMIN_PASSWORD: admin123
       PUBLIC_URL: http://localhost:8055
+      # Mejora el rendimiento de SQLite en sistemas de archivos compartidos (Windows/OneDrive)
+      DB_SQLITE_JOURNAL_MODE: 'WAL'
+      # Reduce la posibilidad de bloqueos de base de datos en entornos de desarrollo
+      DB_SQLITE_CACHE_MODE: 'shared'
+      # Permite que Directus cree el archivo si no existe con permisos correctos
+      DB_SQLITE_BUSY_TIMEOUT: 5000
+      # Configuración de CORS para permitir peticiones del Backend/Frontend
+      CORS_ENABLED: 'true'
+      CORS_ORIGIN: 'true'
     volumes:
-      - ./directus/database:/directus
+      # Cambiamos a rutas relativas para ver los archivos en Windows
+      - ./directus/database:/directus/database
       - ./directus/uploads:/directus/uploads
+    healthcheck:
+      # Usamos CMD-SHELL para mayor compatibilidad con curl o wget
+      test: ["CMD-SHELL", "curl -f http://localhost:8055/server/ping || wget --no-verbose --tries=1 --spider http://localhost:8055/server/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
     networks:
       - production-orders
 
@@ -25,18 +42,23 @@ services:
       dockerfile: apps/backend/Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
       DATABASE_URL: http://directus:8055
-      DATABASE_TOKEN: admin123
+      DATABASE_TOKEN: D9u2R4ltmDN_jRtXW5enS3zmfbKf4CWL
+      # Permitir CORS en el backend si es necesario
+      CORS_ORIGIN: http://localhost:3001
     depends_on:
-      - directus
+      directus:
+        condition: service_healthy
     volumes:
-      - ./apps/backend/src:/app/src
-      - ./apps/backend/node_modules:/app/node_modules
+      - ./apps/backend:/app:delegated
+      - /app/node_modules
     networks:
       - production-orders
-    command: yarn workspace @po/backend start:dev
+    command: npm run start:dev
 
   frontend:
     build:
@@ -44,8 +66,10 @@ services:
       dockerfile: apps/frontend/Dockerfile.dev
     ports:
       - "3001:3000"
+    env_file:
+      - .env
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000/api/}
     depends_on:
       - backend
     volumes:
@@ -53,7 +77,7 @@ services:
       - /app/node_modules
     networks:
       - production-orders
-    command: npm run dev
+    command: yarn workspace @po/frontend dev
 
 networks:
   production-orders:

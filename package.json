@@ -8,7 +8,7 @@
     "libs/*"
   ],
   "scripts": {
-    "dev": "yarn workspace @po/backend dev & yarn workspace @po/frontend dev",
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"yarn workspace @po/backend start:dev\" \"yarn workspace @po/frontend dev\"",
     "build": "yarn workspace @po/backend build && yarn workspace @po/frontend build",
     "test": "yarn workspace @po/backend test",
     "test:watch": "yarn workspace @po/backend test:watch",
@@ -17,8 +17,9 @@
     "docker:logs": "docker-compose logs -f"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "@types/node": "^25.9.1",
-    "typescript": "^6.0.3"
+    "typescript": "^5.3.3"
   },
   "packageManager": "yarn@4.0.0"
 }

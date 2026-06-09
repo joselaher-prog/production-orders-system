@@ -34,6 +34,7 @@ export const ProductionOrdersPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await productionOrdersApi.getAll();
+      console.log('Fetched orders:', data);
       setOrders(data || []);
     } catch (error) {
       message.error('Failed to load orders');
@@ -48,15 +49,18 @@ export const ProductionOrdersPage: React.FC = () => {
         reference: values.reference,
         product: values.product,
         quantity: values.quantity,
-        startDate: values.startDate.format('YYYY-MM-DD'),
-        endDate: values.endDate.format('YYYY-MM-DD'),
+        startDate: values.startDate.toISOString(),
+        endDate: values.endDate.toISOString(),
+        status: 'planned' as ProductionOrderStatus,
       };
 
       if (editingId) {
-        await productionOrdersApi.update(editingId, payload);
+        const result = await productionOrdersApi.update(editingId, payload);
+        console.log('Update result:', result);
         message.success('Order updated successfully');
       } else {
-        await productionOrdersApi.create(payload);
+        const result = await productionOrdersApi.create(payload);
+        console.log('Create result:', result);
         message.success('Order created successfully');
       }
 
@@ -65,6 +69,7 @@ export const ProductionOrdersPage: React.FC = () => {
       setEditingId(null);
       fetchOrders();
     } catch (error) {
+      console.error('Error handling order:', error);
       message.error(editingId ? 'Failed to update order' : 'Failed to create order');
     }
   };
@@ -124,11 +129,13 @@ export const ProductionOrdersPage: React.FC = () => {
       title: 'Start Date',
       dataIndex: 'startDate',
       key: 'startDate',
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'End Date',
       dataIndex: 'endDate',
       key: 'endDate',
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'Status',
@@ -202,7 +209,7 @@ export const ProductionOrdersPage: React.FC = () => {
 
       <Modal
         title={editingId ? 'Edit Order' : 'Create New Order'}
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
           setEditingId(null);

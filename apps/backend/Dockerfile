@@ -1,13 +1,14 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
-COPY . .
+COPY apps/backend/package*.json ./
 
-RUN corepack enable && corepack prepare yarn@4.0.0 --activate && yarn install
+RUN npm install
 
-RUN yarn workspace @po/backend build
+COPY apps/backend .
+
+RUN npm run build
 
 EXPOSE 3000
-
-CMD ["yarn", "workspace", "@po/backend", "start:prod"]
+CMD ["npm", "run", "start:dev"]

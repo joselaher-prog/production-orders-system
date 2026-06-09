@@ -7,7 +7,7 @@ import {
   ProductionOrder,
 } from '@po/types';
 
-@Controller('api/production-orders')
+@Controller('production-orders')
 export class ProductionOrdersController {
   constructor(private readonly service: ProductionOrdersService) {}
 

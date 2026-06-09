@@ -1,4 +1,8 @@
+# Dependencies
 node_modules/
+**/node_modules/
+
+# Build outputs
 dist/
 *.log
 .env
@@ -12,5 +16,19 @@ build/
 coverage/
 directus/database/*
 !directus/database/.gitkeep
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Directus / Database
+directus/database/*.sqlite
+directus/database/*.sqlite-journal
+directus/database/*.sqlite-wal
 directus/uploads/*
 !directus/uploads/.gitkeep
+
+# Misc
+.DS_Store
+*.log

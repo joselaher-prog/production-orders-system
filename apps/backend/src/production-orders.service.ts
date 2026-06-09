@@ -10,64 +10,101 @@ import { rescheduleAllConflicts } from '@po/rescheduling';
 
 @Injectable()
 export class ProductionOrdersService {
-  private directusUrl = process.env.DATABASE_URL || 'http://localhost:8055';
-  private directusToken = process.env.DATABASE_TOKEN || 'admin123';
+  private directusUrl = (process.env.DATABASE_URL || 'http://localhost:8055').replace(/\/$/, '');
+  private directusToken = (process.env.DATABASE_TOKEN || 'BsCq6ex4frS5ZNLJcjsReL9917a4WB6F').trim().replace(/"/g, '');
+  private collection = 'orders';
 
-  private async request(method: string, path: string, data?: any) {
-    const url = `${this.directusUrl}/graphql`;
-    const headers = {
-      'Authorization': `Bearer ${this.directusToken}`,
+  constructor() {
+    if (!this.directusToken) {
+      console.error('[Backend] CRITICAL ERROR: DATABASE_TOKEN is not defined in environment variables!');
+    }
+    const maskedToken = this.directusToken ? `${this.directusToken.substring(0, 6)}...` : 'MISSING';
+    console.log(`[Backend] Directus Connection -> URL: ${this.directusUrl} | Token: ${maskedToken} | Collection: ${this.collection}`);
+  }
+
+  private get headers() {
+    return {
+      Authorization: `Bearer ${this.directusToken}`,
       'Content-Type': 'application/json',
     };
-
-    try {
-      const response = await axios({
-        method: 'post',
-        url,
-        headers,
-        data: {
-          query: path,
-          variables: data,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Directus request error:', error);
-      throw error;
-    }
   }
 
   async findAll(): Promise<ProductionOrder[]> {
-    // Mock for now - in production this would query Directus
-    return [];
+    const url = `${this.directusUrl}/items/${this.collection}`;
+    try {
+      const response = await axios.get(url, { headers: this.headers });
+      return response.data.data;
+    } catch (error: any) {
+      this.logError('fetch', error, url);
+      return [];
+    }
   }
 
   async findOne(id: string): Promise<ProductionOrder | null> {
-    // Mock for now
-    return null;
+    const url = `${this.directusUrl}/items/${this.collection}/${id}`;
+    try {
+      const response = await axios.get(url, { headers: this.headers });
+      return response.data.data;
+    } catch (error: any) {
+      this.logError('fetch one', error, url);
+      return null;
+    }
   }
 
   async create(createDto: CreateProductionOrderDto): Promise<ProductionOrder> {
-    const order: ProductionOrder = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...createDto,
-      status: 'planned',
-      createdAt: new Date().toISOString(),
-    };
-    // In production, save to Directus
-    return order;
+    const url = `${this.directusUrl}/items/${this.collection}`;
+    try {
+      const response = await axios.post(
+        url,
+        {
+          ...createDto,
+          status: 'planned',
+        },
+        { headers: this.headers }
+      );
+      return response.data.data;
+    } catch (error: any) {
+      this.logError('create', error, url);
+      throw error;
+    }
   }
 
   async update(
     id: string,
     updateDto: UpdateProductionOrderDto,
   ): Promise<ProductionOrder | null> {
-    // In production, update in Directus
-    return null;
+    const url = `${this.directusUrl}/items/${this.collection}/${id}`;
+    try {
+      const response = await axios.patch(
+        url,
+        updateDto,
+        { headers: this.headers }
+      );
+      return response.data.data;
+    } catch (error: any) {
+      this.logError('update', error, url);
+      throw error;
+    }
   }
 
   async delete(id: string): Promise<void> {
-    // In production, delete from Directus
+    const url = `${this.directusUrl}/items/${this.collection}/${id}`;
+    try {
+      await axios.delete(url, { headers: this.headers });
+    } catch (error: any) {
+      this.logError('delete', error, url);
+      throw error;
+    }
+  }
+
+  private logError(action: string, error: any, url?: string) {
+    const status = error.response?.status;
+    const errorCode = error.code || 'UNKNOWN_ERROR';
+    const details = error.response?.data?.errors?.[0]?.message || error.message || error;
+    console.error(`[Backend] Directus ${action} error (${status || errorCode}) at ${url}:`, details);
+    if (status === 401) {
+      console.warn('[Backend] ALERT: Unauthorized. Please check if the Static Token is correctly set in the Directus User profile.');
+    }
   }
 
   async rescheduleConflicts(
